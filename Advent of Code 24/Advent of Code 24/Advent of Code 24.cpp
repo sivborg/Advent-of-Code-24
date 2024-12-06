@@ -10,10 +10,45 @@
 using namespace std;
 
 void day4();
+void day4part2();
 
 int main()
 {
-    day4();
+    day4part2();
+}
+
+void day4part2()
+{
+    vector<vector<char>> matrix;
+    {
+        ifstream f{ "Day4.txt" };
+
+        string line;
+        while (std::getline(f, line))
+            matrix.emplace_back(line.begin(), line.end());
+    }
+
+    int nFound = 0;
+
+    for (size_t i = 1; i < matrix.size()-1; i++)
+    {
+        for (size_t j = 1; j < matrix[i].size()-1; j++)
+        {
+            if (matrix[i][j] != 'A')
+                continue;
+
+            if ((matrix[i + 1][j + 1] == 'M' || matrix[i + 1][j + 1] == 'S') &&
+                (matrix[i - 1][j - 1] == 'M' || matrix[i - 1][j - 1] == 'S') &&
+                (matrix[i + 1][j + 1] != matrix[i - 1][j - 1]) &&
+                (matrix[i + 1][j - 1] == 'M' || matrix[i + 1][j - 1] == 'S') &&
+                (matrix[i - 1][j + 1] == 'M' || matrix[i - 1][j + 1] == 'S') &&
+                (matrix[i + 1][j - 1] != matrix[i - 1][j + 1])
+                )
+                nFound += 1;
+        }
+    }
+    cout << "X-MAS FOUND: " << nFound << endl;
+
 }
 
 void day4()
