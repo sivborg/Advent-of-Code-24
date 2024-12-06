@@ -3,9 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-*/input.txt
 *.exe
 .vscode
+*.txt
 
 # User-specific files
 *.rsuser

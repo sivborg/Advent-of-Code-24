@@ -2,10 +2,74 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+void day4();
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    day4();
+}
+
+void day4()
+{
+    vector<vector<char>> matrix;
+    {
+        ifstream f{ "Day4.txt" };
+
+        string line;
+        while (std::getline(f, line))
+            matrix.emplace_back(line.begin(), line.end());
+    }
+
+    string word = "XMAS";
+    int nFound = 0;
+
+    for (size_t i = 0; i < matrix.size(); i++)
+    {
+        for (size_t j = 0; j < matrix[i].size(); j++)
+        {
+            if (matrix[i][j] != 'X')
+                continue;
+
+            for (int dx = -1; dx < 2; dx++)
+            {
+                for (int dy = -1; dy < 2; dy++)
+                {
+                    if (dy == dx && dy == 0)
+                        continue;
+
+                    bool found = true;
+
+                    int currx = j, curry = i;
+                    int state = 1;
+
+                    while (state < 4)
+                    {
+                        currx += dx;
+                        curry += dy;
+
+                        if (currx < 0 || curry < 0 || curry >= matrix.size() || currx >= matrix[curry].size() || matrix[curry][currx] != word[state])
+                        {
+                            break;
+                        }
+                        else {
+                            state += 1;
+                        }
+                    }
+
+                    if (state == 4)
+                        nFound++;
+                }
+            }
+        }
+    }
+    cout << "XMAS FOUND: " << nFound << endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
