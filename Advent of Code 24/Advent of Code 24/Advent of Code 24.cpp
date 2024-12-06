@@ -6,15 +6,90 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
+void day5();
 void day4();
 void day4part2();
 
 int main()
 {
-    day4part2();
+    day5();
+}
+
+void day5()
+{
+    int acc = 0, acc2 = 0;
+    unordered_map<int, vector<int>> rules;
+    {
+        ifstream f{ "Day5.txt" };
+
+        string line;
+        while (std::getline(f, line))
+        {
+            if (line.empty() || line.find(",") != string::npos) // Done with rules
+                break;
+
+            stringstream ss(line);
+            string s;
+            std::getline(ss, s, '|');
+            int num1 = stoi(s);
+            std::getline(ss, s, '|');
+            int num2 = stoi(s);
+
+            rules[num1].push_back(num2);
+        }
+
+        while (std::getline(f, line))
+        {
+            unordered_set<int> existing;
+            vector<int> pages;
+
+            stringstream ss(line);
+            string s;
+            while (std::getline(ss, s, ','))
+            {
+                pages.push_back(stoi(s));
+            }
+
+            bool valid = true;
+            for (auto& i : pages)
+            {
+                if (existing.count(i))
+                    continue;
+                existing.insert(i);
+
+                if (rules.count(i) == 0)
+                    continue;
+
+                for (auto& forbidden : rules[i])
+                {
+                    if (existing.count(forbidden))
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (!valid)
+                    break;
+            }
+            if (valid)
+            {
+                acc += pages[pages.size() / 2];
+            }
+            else
+            {
+                existing.clear();
+                existing.insert(pages.begin(), pages.end());
+
+                int totalnums = pages.size();
+            }
+        }
+    }
+    cout << acc << endl;
 }
 
 void day4part2()
