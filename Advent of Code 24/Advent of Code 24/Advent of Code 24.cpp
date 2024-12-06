@@ -86,10 +86,35 @@ void day5()
                 existing.insert(pages.begin(), pages.end());
 
                 int totalnums = pages.size();
+                pages.clear();
+                while (pages.size() <= (totalnums / 2))
+                {
+                    for (auto& i : existing)
+                    {
+                        bool valid = true;
+                        for (auto& j : existing)
+                        {
+                            if (i == j)
+                                continue;
+                            if (find(rules[j].begin(), rules[j].end(), i) != rules[j].end())
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if (valid)
+                        {
+                            pages.push_back(i);
+                            existing.erase(i);
+                            break;
+                        }
+                    }
+                }
+                acc2 += pages.back();
             }
         }
     }
-    cout << acc << endl;
+    cout << acc << " " << acc2 << endl;
 }
 
 void day4part2()
