@@ -32,7 +32,7 @@ void day6()
             matrix.emplace_back(line.begin(), line.end());
     }
     bool found = false;
-    int currx, curry;
+    int currx = 0, curry = 0;
        
     for (size_t y = 0; y < matrix.size(); y++)
     {
@@ -51,16 +51,38 @@ void day6()
 
     int dx = 0, dy = -1;
 
-    matrix[curry][currx] = 'X';
-
-    while (curry > 0 && curry < matrix.size() && currx > 0 && currx < matrix[curry].size())
+    while (curry >= 0 && curry < matrix.size() && currx >= 0 && currx < matrix[curry].size())
     {
+        matrix[curry][currx] = 'X';
+        int nextx = currx + dx, nexty = curry + dy;
+
+        if (nexty >= 0 && nexty < matrix.size() && nextx >= 0 && nextx < matrix[nexty].size() &&
+            matrix[nexty][nextx] == '#')
+        {
+            int olddx = dx;
+            dx = -dy;
+            dy = olddx;
+            //if (dy == -1)
+                //break;
+        }
         curry += dy;
         currx += dx;
-        matrix[curry][currx] = 'X';
-
-        if(curry + dy > 0 )
     }
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            cout << matrix[y][x];
+        }
+        cout << endl;
+    }
+
+    int nCount = 0;
+    for (auto& i : matrix)
+    {
+        nCount += count(i.begin(), i.end(), 'X');
+    }
+    std::cout << "Count " << nCount << endl;
 }
 
 void day5()
