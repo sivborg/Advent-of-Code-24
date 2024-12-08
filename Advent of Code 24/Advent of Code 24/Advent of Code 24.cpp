@@ -13,6 +13,7 @@
 
 using namespace std;
 
+void day7();
 void day6();
 void day5();
 void day4();
@@ -20,7 +21,64 @@ void day4part2();
 
 int main()
 {
-    day6();
+    day7();
+}
+
+bool day7Valid(uint64_t target, uint64_t currval, const vector<int>& nextNums, int vecInd)
+{
+    if (nextNums.size()-1 == vecInd)
+    {
+        if (target == currval + nextNums[vecInd])
+            return true;
+        if (target == currval * nextNums[vecInd])
+            return true;;
+
+        string concat = to_string(currval) + to_string(nextNums[vecInd]);
+        return target == stoll(concat);
+    }
+
+    uint64_t addVal = currval + nextNums[vecInd];
+    if (day7Valid(target, addVal, nextNums, vecInd + 1))
+        return true;
+    uint64_t multVal = currval * nextNums[vecInd];
+    if (day7Valid(target, multVal, nextNums, vecInd + 1))
+        return true;
+
+    string concat = to_string(currval) + to_string(nextNums[vecInd]);
+    return (day7Valid(target, stoll(concat), nextNums, vecInd + 1));
+
+    
+}
+
+void day7()
+{
+    uint64_t nValid = 0;
+    {
+        ifstream f{ "Day7.txt" };
+
+        string line;
+        while (std::getline(f, line))
+        {
+
+            stringstream ss(line);
+            string targetstr;
+            ss >> targetstr;
+            targetstr = targetstr.substr(0,targetstr.size() - 1);
+            uint64_t target = stoll(targetstr);
+
+            vector<int> nums;
+
+            string s;
+            while (ss >> s)
+            {
+                nums.push_back(stoi(s));
+            }
+
+            if (day7Valid(target, nums.front(), nums, 1))
+                nValid+= target;
+        }
+    }
+    std::cout << nValid << endl;
 }
 
 bool day6CheckLoop(const vector<vector<char>>& map, int startx, int starty, int dx, int dy)
