@@ -7,7 +7,9 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <map>
 #include <unordered_set>
+#include <set>
 
 using namespace std;
 
@@ -19,6 +21,47 @@ void day4part2();
 int main()
 {
     day6();
+}
+
+bool day6CheckLoop(const vector<vector<char>>& map, int startx, int starty, int dx, int dy)
+{
+    auto& matrix = map;
+    int currx = startx;
+    int curry = starty;
+    std::map<pair<int, int>, vector<int>> previous_states;
+    while (curry >= 0 && curry < matrix.size() && currx >= 0 && currx < matrix[curry].size())
+    {
+        int state = 0;
+        state = dx == -1 ?  1  : state;
+        state = dy == 1 ? 2: state;
+        state = dy == -1 ? 3 : state;
+
+        auto& position_states = previous_states[{currx, curry}];
+
+        if (find(position_states.begin(), position_states.end(), state) != position_states.end())
+        {
+            return true; // Loop found
+        }
+        position_states.push_back(state);
+
+        int nextx = currx + dx, nexty = curry + dy;
+
+        if (nexty >= 0 && nexty < matrix.size() && nextx >= 0 && nextx < matrix[nexty].size() &&
+            matrix[nexty][nextx] == '#')
+        {
+            int olddx = dx;
+            dx = -dy;
+            dy = olddx;
+            //if (dy == -1)
+                //break;
+        }
+        else
+        {
+            curry += dy;
+            currx += dx;
+        }
+    }
+    return false;
 }
 
 void day6()
@@ -49,33 +92,56 @@ void day6()
         if (found) break;
     }
 
+    int startx = currx, starty = curry;
+
     int dx = 0, dy = -1;
+    set<pair<int, int>> loops, beenThere;
 
     while (curry >= 0 && curry < matrix.size() && currx >= 0 && currx < matrix[curry].size())
     {
         matrix[curry][currx] = 'X';
+        beenThere.insert({ currx, curry });
         int nextx = currx + dx, nexty = curry + dy;
 
-        if (nexty >= 0 && nexty < matrix.size() && nextx >= 0 && nextx < matrix[nexty].size() &&
-            matrix[nexty][nextx] == '#')
+        if (nexty >= 0 && nexty < matrix.size() && nextx >= 0 && nextx < matrix[nexty].size())
         {
-            int olddx = dx;
-            dx = -dy;
-            dy = olddx;
-            //if (dy == -1)
-                //break;
+            if (matrix[nexty][nextx] == '#')
+            {
+                int olddx = dx;
+                dx = -dy;
+                dy = olddx;
+                //if (dy == -1)
+                    //break;
+            }
+            else
+            {
+                if ((nexty != starty || nextx != startx) && loops.find({ nextx, nexty }) == loops.end() && beenThere.find({ nextx, nexty }) == beenThere.end())
+                {
+                    matrix[nexty][nextx] = '#';
+                    if (day6CheckLoop(matrix, currx, curry, dx, dy))
+                    {
+                        loops.insert({ nextx, nexty });
+                    }
+                    matrix[nexty][nextx] = '.';
+                }
+                curry += dy;
+                currx += dx;
+            }
         }
-        curry += dy;
-        currx += dx;
+        else
+        {
+            curry += dy;
+            currx += dx;
+        }
     }
-    for (size_t y = 0; y < matrix.size(); y++)
+    /*for (size_t y = 0; y < matrix.size(); y++)
     {
         for (size_t x = 0; x < matrix[y].size(); x++)
         {
             cout << matrix[y][x];
         }
         cout << endl;
-    }
+    }*/
 
     int nCount = 0;
     for (auto& i : matrix)
@@ -83,6 +149,7 @@ void day6()
         nCount += count(i.begin(), i.end(), 'X');
     }
     std::cout << "Count " << nCount << endl;
+    std::cout << "Loops " << loops.size() << endl;
 }
 
 void day5()
