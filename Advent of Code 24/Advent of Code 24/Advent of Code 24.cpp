@@ -11,13 +11,56 @@
 
 using namespace std;
 
+void day6();
 void day5();
 void day4();
 void day4part2();
 
 int main()
 {
-    day5();
+    day6();
+}
+
+void day6()
+{
+    vector<vector<char>> matrix;
+    {
+        ifstream f{ "Day6.txt" };
+
+        string line;
+        while (std::getline(f, line))
+            matrix.emplace_back(line.begin(), line.end());
+    }
+    bool found = false;
+    int currx, curry;
+       
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (matrix[y][x] == '^')
+            {
+                currx = x;
+                curry = y;
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+
+    int dx = 0, dy = -1;
+
+    matrix[curry][currx] = 'X';
+
+    while (curry > 0 && curry < matrix.size() && currx > 0 && currx < matrix[curry].size())
+    {
+        curry += dy;
+        currx += dx;
+        matrix[curry][currx] = 'X';
+
+        if(curry + dy > 0 )
+    }
 }
 
 void day5()
