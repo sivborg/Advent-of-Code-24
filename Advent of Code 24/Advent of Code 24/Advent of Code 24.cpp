@@ -43,6 +43,7 @@ void day9()
 
     uint64_t acc = 0;
     int pos = 0;
+    vector<bool> moved(nums.size(),false);
 
     for (size_t i = 0; i < nums.size(); i++)
     {
@@ -50,27 +51,32 @@ void day9()
         {
             for (size_t j = 0; j < nums[i]; j++)
             {
-                acc += pos * (i / 2);
+                if (!moved[i])
+                    acc += pos * (i / 2);
                 pos += 1;
             }
         }
         else
         {
             int j = nums.size() - 1;
-            for (size_t n = 0; n < nums[i]; n++)
+            int remaining_space = nums[i];
+            while (remaining_space > 0)
             {
-                while (j % 2 == 1 || nums[j] == 0 )
+                while ( j > 0 && (j % 2 == 1 || moved[j] || remaining_space < nums[j]))
                     j--;
 
                 if (j <= i)
                     break;
 
-                nums[j]--;
-                acc += pos * (j / 2);
-                pos += 1;
+                moved[j] = true;
+                for (size_t n = 0; n < nums[j]; n++)
+                {
+                    remaining_space--;
+                    acc += pos * (j / 2);
+                    pos += 1;
+                }
             }
-            if (j <= i)
-                break;
+            pos += remaining_space;
         }
     }
     std::cout << acc << endl;
