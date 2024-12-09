@@ -10,6 +10,7 @@
 #include <map>
 #include <unordered_set>
 #include <set>
+#include <numeric>
 
 using namespace std;
 
@@ -63,14 +64,34 @@ void day8()
                 int dx = station[i].first - station[j].first;
                 int dy = station[i].second - station[j].second;
 
+                int step_gcd = std::gcd(dx, dy);
+                dx /= step_gcd;
+                dy /= step_gcd;
 
-                int x = station[i].first + dx, y = station[i].second + dy;
+                int x = station[i].first, y = station[i].second;
+
+                while (validBounds(x, y))
+                {
+                    matrix[y][x] = '#';
+                    x += dx;
+                    y += dy;
+                }
+
+                x = station[i].first, y = station[i].second;
+                while (validBounds(x, y))
+                {
+                    matrix[y][x] = '#';
+                    x -= dx;
+                    y -= dy;
+                }
+                // Part I
+                /*int x = station[i].first + dx, y = station[i].second + dy;
                 if (validBounds(x, y))
                     matrix[y][x] = '#';
 
                 x = station[j].first - dx, y = station[j].second - dy;
                 if (validBounds(x, y))
-                    matrix[y][x] = '#';
+                    matrix[y][x] = '#';*/
             }
 
         }
