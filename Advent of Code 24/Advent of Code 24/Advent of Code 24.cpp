@@ -13,6 +13,7 @@
 
 using namespace std;
 
+void day8();
 void day7();
 void day6();
 void day5();
@@ -21,7 +22,74 @@ void day4part2();
 
 int main()
 {
-    day7();
+    day8();
+}
+
+void day8()
+{
+    vector<vector<char>> matrix;
+    {
+        ifstream f{ "Day8.txt" };
+
+        string line;
+        while (std::getline(f, line))
+            matrix.emplace_back(line.begin(), line.end());
+    }
+    bool found = false;
+    int currx = 0, curry = 0;
+
+    unordered_map<char, vector<pair<int, int>>> stations;
+
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (matrix[y][x] != '.')
+            {
+                stations[matrix[y][x]].push_back({ x,y });
+            }
+        }
+    }
+
+    auto validBounds = [&](int x, int y) { return y >= 0 && y < matrix.size() && x >= 0 && x < matrix[y].size(); };
+
+    for (auto& val : stations)
+    {
+        auto& station = val.second;
+        for (size_t i = 0; i < station.size()-1; i++)
+        {
+            for (size_t j = i+1; j < station.size(); j++)
+            {
+                int dx = station[i].first - station[j].first;
+                int dy = station[i].second - station[j].second;
+
+
+                int x = station[i].first + dx, y = station[i].second + dy;
+                if (validBounds(x, y))
+                    matrix[y][x] = '#';
+
+                x = station[j].first - dx, y = station[j].second - dy;
+                if (validBounds(x, y))
+                    matrix[y][x] = '#';
+            }
+
+        }
+    }
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            cout << matrix[y][x];
+        }
+        cout << endl;
+    }
+
+    int nCount = 0;
+    for (auto& i : matrix)
+    {
+        nCount += count(i.begin(), i.end(), '#');
+    }
+    std::cout << "Count " << nCount << endl;
 }
 
 bool day7Valid(uint64_t target, uint64_t currval, const vector<int>& nextNums, int vecInd)
