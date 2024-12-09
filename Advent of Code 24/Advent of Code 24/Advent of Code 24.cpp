@@ -14,6 +14,7 @@
 
 using namespace std;
 
+void day9();
 void day8();
 void day7();
 void day6();
@@ -23,7 +24,56 @@ void day4part2();
 
 int main()
 {
-    day8();
+    day9();
+}
+
+void day9()
+{
+    vector<int> nums;
+    {
+        ifstream f{ "Day9.txt" };
+
+        std::istream_iterator<char> start(f), end;
+
+        for (auto it = move(start); it != end; it++)
+        {
+            nums.push_back(*it - '0');
+        }
+    }
+
+    uint64_t acc = 0;
+    int pos = 0;
+
+    for (size_t i = 0; i < nums.size(); i++)
+    {
+        if (i % 2 == 0) 
+        {
+            for (size_t j = 0; j < nums[i]; j++)
+            {
+                acc += pos * (i / 2);
+                pos += 1;
+            }
+        }
+        else
+        {
+            int j = nums.size() - 1;
+            for (size_t n = 0; n < nums[i]; n++)
+            {
+                while (j % 2 == 1 || nums[j] == 0 )
+                    j--;
+
+                if (j <= i)
+                    break;
+
+                nums[j]--;
+                acc += pos * (j / 2);
+                pos += 1;
+            }
+            if (j <= i)
+                break;
+        }
+    }
+    std::cout << acc << endl;
 }
 
 void day8()
