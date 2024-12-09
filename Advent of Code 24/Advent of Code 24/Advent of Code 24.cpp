@@ -59,14 +59,14 @@ void day9()
         else
         {
             int j = nums.size() - 1;
+            if (j % 2 == 1)
+                j--;
             int remaining_space = nums[i];
             while (remaining_space > 0)
             {
-                while ( j > 0 && (j % 2 == 1 || moved[j] || remaining_space < nums[j]))
-                    j--;
 
-                if (j <= i)
-                    break;
+                while ( j > i && (moved[j] || remaining_space < nums[j]))
+                    j-=2;
 
                 moved[j] = true;
                 for (size_t n = 0; n < nums[j]; n++)
