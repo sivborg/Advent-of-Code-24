@@ -34,9 +34,9 @@ int check_trail(const vector<vector<int>>& matrix, int x, int y, set<pair<int,in
 
     if (height == 9)
     {
-        if (checked.count({ x,y }))
-            return 0;
-        checked.insert({ x,y });
+        //if (checked.count({ x,y }))
+        //    return 0;
+        //checked.insert({ x,y });
         return 1;
     }
     int acc = 0;
