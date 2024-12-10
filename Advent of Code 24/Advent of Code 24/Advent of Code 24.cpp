@@ -14,6 +14,7 @@
 
 using namespace std;
 
+void day10();
 void day9();
 void day8();
 void day7();
@@ -24,7 +25,72 @@ void day4part2();
 
 int main()
 {
-    day9();
+    day10();
+}
+
+int check_trail(const vector<vector<int>>& matrix, int x, int y, set<pair<int,int>>& checked)
+{
+    int height = matrix[y][x];
+
+    if (height == 9)
+    {
+        if (checked.count({ x,y }))
+            return 0;
+        checked.insert({ x,y });
+        return 1;
+    }
+    int acc = 0;
+    if (y > 0 && matrix[y-1][x] == height + 1)
+        acc += check_trail(matrix, x, y - 1, checked);
+    if (x > 0 && matrix[y][x - 1] == height + 1)
+        acc += check_trail(matrix, x - 1, y, checked);
+    if (y < matrix.size() - 1 && matrix[y + 1][x] == height + 1)
+        acc += check_trail(matrix, x, y + 1, checked);
+    if (x < matrix[y].size() - 1 && matrix[y][x + 1] == height + 1)
+        acc += check_trail(matrix, x + 1, y, checked);
+
+    return acc;
+}
+
+void day10()
+{
+
+    vector<vector<int>> matrix;
+    {
+        ifstream f{ "Day10.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            matrix.push_back({});
+            for (auto& i : line)
+            {
+                matrix.back().push_back(i - '0');
+            }
+        }
+    }
+
+    set<pair<int, int>> start_points;
+
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (matrix[y][x] == 0)
+            {
+                start_points.insert({ x,y });
+            }
+        }
+    }
+    int acc = 0;
+
+    for (auto& start : start_points)
+    {
+        set<pair<int, int>> checked;
+        acc += check_trail(matrix, start.first, start.second,checked);
+    }
+
+    std::cout << acc << endl;
 }
 
 void day9()
