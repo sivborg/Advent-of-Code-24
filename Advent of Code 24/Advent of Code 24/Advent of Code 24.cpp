@@ -15,6 +15,7 @@
 
 using namespace std;
 
+void day11part2();
 void day11();
 void day10();
 void day9();
@@ -27,7 +28,60 @@ void day4part2();
 
 int main()
 {
-    day11();
+    day11part2();
+}
+
+void day11part2()
+{
+    // Let's be smarter about this
+    unordered_map<uint64_t, uint64_t> nEachStone;
+    {
+        ifstream f{ "Day11.txt" };
+
+        string line;
+        while (std::getline(f, line))
+        {
+            stringstream ss(line);
+            int num = 0;
+            while (ss >> num)
+                nEachStone[num] += 1;
+        }
+    }
+
+    for (size_t blink = 0; blink < 75; blink++)
+    {
+        unordered_map<uint64_t, uint64_t> nEachNext;
+        auto it = nEachStone.begin();
+        for (; it != nEachStone.end(); it++)
+        {
+            string numstring = std::to_string(it->first);
+            if (numstring.size() % 2 == 0)
+            {
+                nEachNext[stoll(numstring.substr(0, numstring.size() / 2))] += it->second;
+                nEachNext[stoll(numstring.substr(numstring.size() / 2))] += it->second;
+            }
+            else if (it->first == 0)
+            {
+                nEachNext[1] += it->second;
+            }
+            else
+            {
+                nEachNext[it->first*2024] += it->second;
+            }
+        }
+        nEachStone = std::move(nEachNext);
+        /*for (auto& i : nums)
+        {
+            std::cout << i << " ";
+        }*/
+        uint64_t acc = 0;
+        for (auto& i : nEachStone)
+        {
+            acc += i.second;
+        }
+        cout << blink << " " << acc << endl;
+    }
+    
 }
 
 void day11()
