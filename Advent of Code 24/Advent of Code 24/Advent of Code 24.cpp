@@ -11,9 +11,11 @@
 #include <unordered_set>
 #include <set>
 #include <numeric>
+#include <list>
 
 using namespace std;
 
+void day11();
 void day10();
 void day9();
 void day8();
@@ -25,7 +27,53 @@ void day4part2();
 
 int main()
 {
-    day10();
+    day11();
+}
+
+void day11()
+{
+    list<uint64_t> nums;
+    unordered_map<int, vector<int>> rules;
+    {
+        ifstream f{ "Day11.txt" };
+
+        string line;
+        while (std::getline(f, line))
+        {
+            stringstream ss(line);
+            int num = 0;
+            while (ss >> num)
+                nums.push_back(num);
+        }
+    }
+
+    for (size_t blink = 0; blink < 25; blink++)
+    {
+        auto it = nums.begin();
+        for (; it != nums.end(); it++)
+        {
+            string numstring = std::to_string(*it);
+            if (numstring.size() % 2 == 0)
+            {
+                *it = stoll(numstring.substr(0, numstring.size() / 2));
+                it++;
+                it = nums.insert(it, stoi(numstring.substr(numstring.size() / 2)));
+            }
+            else if (*it == 0)
+            {
+                *it = 1;
+            }
+            else 
+            {
+                *it *= 2024;
+            }
+        }
+        /*for (auto& i : nums)
+        {
+            std::cout << i << " ";
+        }*/
+        cout << blink << " " << nums.size() << endl;
+    }
 }
 
 int check_trail(const vector<vector<int>>& matrix, int x, int y, set<pair<int,int>>& checked)
