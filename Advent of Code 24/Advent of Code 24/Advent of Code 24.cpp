@@ -12,9 +12,11 @@
 #include <set>
 #include <numeric>
 #include <list>
+#include <multiset>
 
 using namespace std;
 
+void day12();
 void day11part2();
 void day11();
 void day10();
@@ -26,9 +28,85 @@ void day5();
 void day4();
 void day4part2();
 
+
 int main()
 {
-    day11part2();
+    day12();
+}
+
+pair<int, int> day12CalculateSection(vector<vector<char>>& matrix, vector<vector<bool>>& covered, std::multiset<pair<int,int>>& outside, int x, int y)
+{
+    char plot = matrix[y][x];
+    int perimeter = 0;
+    int area = 1;
+    covered[y][x] = true;
+
+
+    int startx = x, starty = y;
+    int dx = 1, dy = 0;
+
+    for (size_t _ = 0; _ < 4; _++)
+    {
+        x = startx + dx;
+        y = starty + dy;
+        if (x < 0 || y < 0 || y >= matrix.size() || x >= matrix[y].size()) // On edge
+        {
+            perimeter++;
+            outside.insert({ x,y });
+        }
+        else if (matrix[y][x] == plot)
+        {
+            if (!covered[y][x])
+            {
+                auto res = day12CalculateSection(matrix, covered, outside, x, y);
+                perimeter += res.first;
+                area += res.second;
+            }
+        }
+        else {
+            perimeter++;
+            outside.insert({ x,y });
+        }
+
+        int olddx = dx;
+        dx = dy;
+        dy = -olddx;
+    }
+
+    return {perimeter, area};
+    
+}
+
+void day12()
+{
+
+    vector<vector<char>> matrix;
+    {
+        ifstream f{ "Day12.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            matrix.emplace_back(line.begin(), line.end());
+        }
+    }
+
+    vector<vector<bool>> covered(matrix.size(), vector<bool>(matrix.back().size(), false));
+    std::multiset<pair<int, int>> outside;
+
+    uint64_t acc = 0;
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (!covered[y][x])
+            {
+                auto res = day12CalculateSection(matrix, covered, outside, x, y);
+                acc += res.first * res.second;
+            }
+        }
+    }
+    std::cout << acc << endl;
 }
 
 void day11part2()
