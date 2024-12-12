@@ -12,7 +12,6 @@
 #include <set>
 #include <numeric>
 #include <list>
-#include <multiset>
 
 using namespace std;
 
@@ -52,7 +51,7 @@ pair<int, int> day12CalculateSection(vector<vector<char>>& matrix, vector<vector
         if (x < 0 || y < 0 || y >= matrix.size() || x >= matrix[y].size()) // On edge
         {
             perimeter++;
-            outside.insert({ x,y });
+            outside.insert({ startx*4+dx,starty*4+dy });
         }
         else if (matrix[y][x] == plot)
         {
@@ -65,7 +64,7 @@ pair<int, int> day12CalculateSection(vector<vector<char>>& matrix, vector<vector
         }
         else {
             perimeter++;
-            outside.insert({ x,y });
+            outside.insert({ startx * 4 + dx, starty * 4 + dy });
         }
 
         int olddx = dx;
@@ -92,21 +91,67 @@ void day12()
     }
 
     vector<vector<bool>> covered(matrix.size(), vector<bool>(matrix.back().size(), false));
-    std::multiset<pair<int, int>> outside;
+    std::multiset<pair<int, int>> outside; // Multiples of four needed to differentiate edge directions
 
     uint64_t acc = 0;
-    for (size_t y = 0; y < matrix.size(); y++)
+    uint64_t acc2 = 0;
+    for (size_t ys = 0; ys < matrix.size(); ys++)
     {
-        for (size_t x = 0; x < matrix[y].size(); x++)
+        for (size_t xs = 0; xs < matrix[ys].size(); xs++)
         {
-            if (!covered[y][x])
+            if (!covered[ys][xs])
             {
-                auto res = day12CalculateSection(matrix, covered, outside, x, y);
+                auto res = day12CalculateSection(matrix, covered, outside, xs, ys);
                 acc += res.first * res.second;
+
+                int nBorders = 0;
+
+                while (outside.size() > 0) // Remove adjacent neighbours
+                {
+                    auto ele = outside.begin();
+                    auto [x, y] = *ele;
+                    outside.erase(ele);
+                    nBorders++;
+
+                    if (outside.count({ x,y - 4 }) || outside.count({ x,y + 4 }))
+                    {
+                        int curry = y-4;
+                        while (outside.count({ x,curry}))
+                        {
+                            outside.erase(outside.find({ x,curry }));
+                            curry-=4;
+                        }
+
+                        curry = y + 4;
+                        while (outside.count({ x,curry}))
+                        {
+                            outside.erase(outside.find({ x,curry}));
+                            curry+=4;
+                        }
+                    }
+                    else if (outside.count({ x-4,y }) || outside.count({ x+4,y }))
+                    {
+                        int currx = x - 4;
+                        while (outside.count({ currx,y }))
+                        {
+                            outside.erase(outside.find({ currx,y }));
+                            currx-=4;
+                        }
+
+                        currx = x + 4;
+                        while (outside.count({ currx,y }))
+                        {
+                            outside.erase(outside.find({ currx,y }));
+                            currx+=4;
+                        }
+                    }
+                }
+
+                acc2 += res.second * nBorders;
             }
         }
     }
-    std::cout << acc << endl;
+    std::cout << acc2 << endl;
 }
 
 void day11part2()
