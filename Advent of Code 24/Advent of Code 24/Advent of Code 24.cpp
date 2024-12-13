@@ -44,8 +44,8 @@ void day13()
 
         while (true) {
 
-            vector<vector<int>> m(2, {});
-            vector<int> target;
+            vector<vector<int64_t>> m(2, {});
+            vector<int64_t> target;
             
             for (size_t i = 0; i < 2; i++)
             {
@@ -70,11 +70,11 @@ void day13()
             int x = 0, y = 0;
             getline(ss, s, '=');
             getline(ss, s, ',');
-            target.push_back(stoi(s));
+            target.push_back(stoi(s)+ 10000000000000);
 
             getline(ss, s, '=');
             getline(ss, s, ',');
-            target.push_back(stoi(s));
+            target.push_back(stoi(s)+ 10000000000000);
 
             int det = m[0][0] * m[1][1] - m[1][0] * m[0][1];
 
@@ -94,8 +94,8 @@ void day13()
             }
             else {
 
-                int a = (m[1][1] * target[0] + -m[0][1] * target[1]) / det; /// Using inverse matrix
-                int b = (-m[1][0] * target[0] + m[0][0] * target[1]) / det;
+                int64_t a = (m[1][1] * target[0] + -m[0][1] * target[1]) / det; /// Using inverse matrix
+                int64_t b = (-m[1][0] * target[0] + m[0][0] * target[1]) / det;
 
                 if (a * m[0][0] + b * m[0][1] == target[0] && a * m[1][0] + b * m[1][1] == target[1])
                     acc += a * 3 + b;
