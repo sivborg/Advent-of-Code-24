@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Advent of Code 24.cpp" />
+    <Text Include="Day13.txt" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Day10.txt" />

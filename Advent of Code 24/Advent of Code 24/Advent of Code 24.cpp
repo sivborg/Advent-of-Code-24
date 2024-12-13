@@ -15,6 +15,7 @@
 
 using namespace std;
 
+void day13();
 void day12();
 void day11part2();
 void day11();
@@ -30,7 +31,82 @@ void day4part2();
 
 int main()
 {
-    day12();
+    day13();
+}
+
+void day13()
+{
+    uint64_t acc = 0;
+    {
+        ifstream f{ "Day13.txt" };
+
+        string line;
+
+        while (true) {
+
+            vector<vector<int>> m(2, {});
+            vector<int> target;
+            
+            for (size_t i = 0; i < 2; i++)
+            {
+                std::getline(f, line);
+                stringstream ss{ line };
+                string s;
+                int x = 0, y = 0;
+                getline(ss, s, '+');
+                getline(ss, s, ',');
+                m[0].push_back(stoi(s));
+
+                getline(ss, s, '+');
+                getline(ss, s, ',');
+                m[1].push_back(stoi(s));
+
+            }
+
+
+            std::getline(f, line);
+            stringstream ss{ line };
+            string s;
+            int x = 0, y = 0;
+            getline(ss, s, '=');
+            getline(ss, s, ',');
+            target.push_back(stoi(s));
+
+            getline(ss, s, '=');
+            getline(ss, s, ',');
+            target.push_back(stoi(s));
+
+            int det = m[0][0] * m[1][1] - m[1][0] * m[0][1];
+
+            if (det == 0) // linearly dependent
+            {
+                if (target[0] / m[0][0] == target[1] / m[1][1] && target[0] % m[0][1] == 0) // In the span of the matrix
+                {
+                    if (target[0] % m[0][0] == 0 && target[0] / m[0][0] * 3 < target[0] / m[0][1])
+                    {
+                        acc += 3 * target[0] / m[0][0];
+                    }
+                    else
+                    {
+                        acc += target[0] / m[0][0];
+                    }
+                }
+            }
+            else {
+
+                int a = (m[1][1] * target[0] + -m[0][1] * target[1]) / det; /// Using inverse matrix
+                int b = (-m[1][0] * target[0] + m[0][0] * target[1]) / det;
+
+                if (a * m[0][0] + b * m[0][1] == target[0] && a * m[1][0] + b * m[1][1] == target[1])
+                    acc += a * 3 + b;
+            }
+
+            if (!getline(f, line))
+                break;
+
+        }
+    }
+    std::cout << acc << endl;
 }
 
 pair<int, int> day12CalculateSection(vector<vector<char>>& matrix, vector<vector<bool>>& covered, std::multiset<pair<int,int>>& outside, int x, int y)
