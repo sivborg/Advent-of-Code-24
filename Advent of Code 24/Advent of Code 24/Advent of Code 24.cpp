@@ -15,6 +15,7 @@
 
 using namespace std;
 
+void day14();
 void day13();
 void day12();
 void day11part2();
@@ -31,7 +32,63 @@ void day4part2();
 
 int main()
 {
-    day13();
+    day14();
+}
+
+void day14()
+{
+    vector<vector<int>> place(2, vector<int>{ 0, 0 });
+    uint64_t acc = 0;
+    {
+        ifstream f{ "Day14.txt" };
+
+        string line;
+
+        constexpr int width = 101, height = 103;
+        constexpr int nIts = 100;
+
+        while (std::getline(f, line)) {
+
+            pair<int64_t, int64_t> p;
+            pair<int64_t, int64_t> v;
+
+            auto* tofill = &p;
+            stringstream ss{ line };
+            for (size_t i = 0; i < 2; i++)
+            {
+                string s;
+                int x = 0, y = 0;
+                getline(ss, s, '=');
+                getline(ss, s, ',');
+                tofill->first = stoi(s);
+
+                getline(ss, s, ' ');                
+                tofill->second= stoi(s);
+
+                tofill = &v;
+
+            }
+
+            int yfinal = (p.second + v.second * nIts);
+            int xfinal = (p.first + v.first * nIts);
+            yfinal %= height;
+            xfinal %= width;
+            if (yfinal < 0)
+                yfinal += height;
+            if (xfinal < 0)
+                xfinal += width;
+
+            if (yfinal == height / 2  || xfinal == width / 2)
+                continue;
+
+            place[yfinal > height / 2][xfinal > width / 2]++;
+
+            cout << xfinal << ", " << yfinal << "\n";
+
+
+        }
+    }
+    std::cout << place[0][0]*place[1][0]* place[0][1] * place[1][1] << endl;
 }
 
 void day13()
@@ -44,7 +101,7 @@ void day13()
 
         while (true) {
 
-            vector<vector<int64_t>> m(2, {});
+            vector<vector<int64_t>> m(2, vector<int64_t>{});
             vector<int64_t> target;
             
             for (size_t i = 0; i < 2; i++)
