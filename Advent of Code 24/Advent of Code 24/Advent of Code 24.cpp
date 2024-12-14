@@ -15,6 +15,7 @@
 
 using namespace std;
 
+void day14part2();
 void day14();
 void day13();
 void day12();
@@ -32,7 +33,115 @@ void day4part2();
 
 int main()
 {
-    day14();
+    day14part2();
+}
+
+void day14part2()
+{
+    struct Robot {
+        int px, py, vx, vy;
+    };
+
+    uint64_t acc = 0;
+    {
+        ifstream f{ "Day14.txt" };
+        vector<Robot> robots;
+
+        string line;
+
+        constexpr int width = 101, height = 103;
+        constexpr int nIts = 100;
+
+        while (std::getline(f, line)) {
+
+            pair<int, int> p;
+            pair<int, int> v;
+
+            auto* tofill = &p;
+            stringstream ss{ line };
+            for (size_t i = 0; i < 2; i++)
+            {
+                string s;
+                int x = 0, y = 0;
+                getline(ss, s, '=');
+                getline(ss, s, ',');
+                tofill->first = stoi(s);
+
+                getline(ss, s, ' ');                
+                tofill->second= stoi(s);
+
+                tofill = &v;
+
+            }
+
+            robots.push_back({ p.first, p.second, v.first, v.second });
+        }
+        set<pair<int, int>> poses;
+        for (size_t sec = 0; true; sec++)
+        {
+            vector<vector<int>> data(103, vector<int>(101, 0));
+            for (auto& r : robots) {
+                r.px += r.vx;
+                r.px %= width;
+                if (r.px < 0)
+                    r.px += width;
+                r.py += r.vy;
+                r.py %= height;
+                if (r.py < 0)
+                    r.py += height;
+
+                poses.insert({ r.px, r.py });
+
+                data[r.py][r.px]++;
+            }
+
+            bool allneighbours = true;
+
+            int hasNeighbour = 0;
+            
+            for (auto& i : poses)
+            {
+                bool found = false;
+                for (int dx = -1; dx < 2; dx++)
+                {
+                    for (int dy = -1; dy < 2; dy++)
+                    {
+                        if (dy == 0 && dx == 0)
+                            continue;
+                        if (poses.count({ i.first + dx, i.second + dy }))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found)
+                        break;
+                }
+                if (found)
+                    hasNeighbour++;
+            }
+
+            if (hasNeighbour/ float(robots.size()) > 0.7f)
+            {
+                cout << "Lots have neighbours at : " << sec << endl;
+                for (int j = 0; j < data.size(); j++)
+                {
+                    for (int x : data[j]) {
+                        cout << (x == 0 ? ' ' : 'x');
+                    }
+                    cout << "\n";
+                }
+                cout << endl;
+                char c;
+                cin >> c;
+            }
+
+            if (sec % 10000 == 0)
+                cout << sec << endl;
+
+            poses.clear();
+        }
+    }
 }
 
 void day14()
