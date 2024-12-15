@@ -15,6 +15,8 @@
 
 using namespace std;
 
+void day15part2();
+void day15();
 void day14part2();
 void day14();
 void day13();
@@ -33,7 +35,193 @@ void day4part2();
 
 int main()
 {
-    day14part2();
+    day15();
+}
+
+void day15part2()
+{
+
+    vector<string> matrix;
+    string instructions = "";
+    {
+        ifstream f{ "Day15.txt" };
+
+        string line;
+
+
+        while (std::getline(f, line)) {
+            if (line.empty())
+                break;
+            matrix.push_back("");
+            for (auto c : line)
+            {
+                if (c == '.')
+                    matrix.back() = matrix.back() + "..";
+                else if (c == '#')
+                    matrix.back() = matrix.back() + "##";
+                else if (c == '@')
+                    matrix.back() = matrix.back() + "@.";
+                else if (c == 'O')
+                    matrix.back() = matrix.back() + "[]";
+            }
+        }
+
+
+        while (std::getline(f, line)) {
+            instructions = instructions + line;
+        }
+    }
+
+    pair<int, int> pos;
+
+    int found = false;
+    for (size_t y = 1; y < matrix.size(); y++)
+    {
+        if (matrix[y].find("@") != string::npos)
+        {
+            pos = { matrix[y].find("@"), y };
+            found = true;
+        }
+    }
+
+    matrix[pos.second][pos.first] = '.';
+
+    for (auto ins : instructions)
+    {
+        int dx = 0;
+        int dy = 0;
+        if (ins == '^')
+            dy = -1;
+        else if (ins == 'v')
+            dy = 1;
+        else if (ins == '<')
+            dx = -1;
+        else if (ins == '>')
+            dx = 1;
+
+        int currx = pos.first + dx, curry = pos.second + dy;
+        int robx = currx, roby = curry;
+
+        while (matrix[curry][currx] == 'O')
+        {
+            currx += dx;
+            curry += dy;
+        }
+
+        if (matrix[curry][currx] == '.')
+        {
+            matrix[curry][currx] = 'O';
+            matrix[roby][robx] = '.';
+            pos.first = robx;
+            pos.second = roby;
+        }
+
+    }
+
+
+    matrix[pos.second][pos.first] = '@';
+    int acc = 0;
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (matrix[y][x] == 'O')
+                acc += x + 100 * y;
+        }
+    }
+    cout << acc << endl;
+
+    for (auto& i : matrix)
+    {
+        cout << i << endl;
+    }
+}
+
+void day15()
+{
+
+    vector<string> matrix;
+    string instructions = "";
+    {
+        ifstream f{ "Day15.txt" };
+
+        string line;
+
+
+        while (std::getline(f, line)) {
+            if (line.empty())
+                break;
+
+            matrix.emplace_back(line.begin(), line.end());
+        }
+
+
+        while (std::getline(f, line)) {
+            instructions = instructions + line;
+        }
+    }
+
+    pair<int, int> pos;
+
+    int found = false;
+    for (size_t y = 1; y < matrix.size(); y++)
+    {
+        if (matrix[y].find("@") != string::npos)
+        {
+            pos = { matrix[y].find("@"), y};
+            found = true;
+        }
+    }
+
+    matrix[pos.second][pos.first] = '.';
+
+    for (auto ins : instructions)
+    {
+        int dx = 0;
+        int dy = 0;
+        if (ins == '^')
+            dy = -1;
+        else if (ins == 'v')
+            dy = 1;
+        else if (ins == '<')
+            dx = -1;
+        else if (ins == '>')
+            dx = 1;
+
+        int currx = pos.first+ dx, curry = pos.second + dy;
+        int robx = currx, roby = curry;
+
+        while (matrix[curry][currx] == 'O')
+        {
+            currx += dx;
+            curry += dy;
+        }
+
+        if (matrix[curry][currx] == '.')
+        {
+            matrix[curry][currx] = 'O';
+            matrix[roby][robx] = '.';
+            pos.first = robx;
+            pos.second = roby;
+        }
+    }
+
+    matrix[pos.second][pos.first] = '@';
+    int acc = 0;
+    for (size_t y = 0; y < matrix.size(); y++)
+    {
+        for (size_t x = 0; x < matrix[y].size(); x++)
+        {
+            if (matrix[y][x] == 'O')
+                acc += x + 100 * y;
+        }
+    }
+    cout << acc << endl;
+
+    for (auto& i : matrix)
+    {
+        cout << i << endl;
+    }
 }
 
 void day14part2()
