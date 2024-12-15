@@ -12,6 +12,7 @@
 #include <set>
 #include <numeric>
 #include <list>
+#include <queue>
 
 using namespace std;
 
@@ -35,7 +36,7 @@ void day4part2();
 
 int main()
 {
-    day15();
+    day15part2();
 }
 
 void day15part2()
@@ -43,6 +44,7 @@ void day15part2()
 
     vector<string> matrix;
     string instructions = "";
+    constexpr bool display = false;
     {
         ifstream f{ "Day15.txt" };
 
@@ -84,6 +86,17 @@ void day15part2()
         }
     }
 
+    if constexpr (display)
+    {
+
+        for (auto& i : matrix)
+        {
+            cout << i << endl;
+        }
+        matrix[pos.second][pos.first] = '.';
+        char c;
+        cin >> c;
+    }
     matrix[pos.second][pos.first] = '.';
 
     for (auto ins : instructions)
@@ -99,23 +112,76 @@ void day15part2()
         else if (ins == '>')
             dx = 1;
 
+
         int currx = pos.first + dx, curry = pos.second + dy;
         int robx = currx, roby = curry;
 
-        while (matrix[curry][currx] == 'O')
+        
+
+
+        queue<pair<int, int>> tomove;
+        tomove.push({ currx,curry });
+        set<pair<char, pair<int, int>>> confirmedMove;
+
+        bool possibleMove = true;
+
+        while (!tomove.empty())
         {
-            currx += dx;
-            curry += dy;
+            auto p = tomove.front();
+            tomove.pop();
+            currx = p.first;
+            curry = p.second;
+            char c = matrix[p.second][p.first];
+            if (c == '#')
+            {
+                possibleMove = false;
+                break;
+            }
+            else if (c == ']')
+            {
+                confirmedMove.insert({ c,{ currx,curry } });
+                confirmedMove.insert({ '[',{currx - 1,curry}});
+                if (dx != -1)
+                    tomove.push({ currx+dx,curry +dy});
+                tomove.push({ currx-1+dx,curry +dy});
+            }
+            else if (c == '[')
+            {
+                confirmedMove.insert({ c,{ currx,curry } });
+                confirmedMove.insert({ ']',{currx + 1,curry}});
+                if (dx != 1)
+                    tomove.push({ currx + dx,curry + dy });
+                tomove.push({ currx + 1 + dx,curry + dy });
+            }
         }
 
-        if (matrix[curry][currx] == '.')
+        if (possibleMove)
         {
-            matrix[curry][currx] = 'O';
-            matrix[roby][robx] = '.';
-            pos.first = robx;
-            pos.second = roby;
+            for (auto& i : confirmedMove)
+            {
+                matrix[i.second.second][i.second.first] = '.';
+            }
+            for (auto& i : confirmedMove)
+            {
+                matrix[i.second.second + dy][i.second.first + dx] = i.first;
+            }
+            pos = { robx, roby };
         }
 
+
+
+        if constexpr (display)
+        {
+            matrix[pos.second][pos.first] = '@';
+
+            for (auto& i : matrix)
+            {
+                cout << i << endl;
+            }
+            matrix[pos.second][pos.first] = '.';
+            char c;
+            cin >> c;
+        }
     }
 
 
@@ -125,7 +191,7 @@ void day15part2()
     {
         for (size_t x = 0; x < matrix[y].size(); x++)
         {
-            if (matrix[y][x] == 'O')
+            if (matrix[y][x] == '[')
                 acc += x + 100 * y;
         }
     }
