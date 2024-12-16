@@ -13,9 +13,11 @@
 #include <numeric>
 #include <list>
 #include <queue>
+#include <chrono>
 
 using namespace std;
 
+void day16();
 void day15part2();
 void day15();
 void day14part2();
@@ -36,7 +38,137 @@ void day4part2();
 
 int main()
 {
-    day15part2();
+    auto then = chrono::steady_clock::now();
+    day16();
+    cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+void day16()
+{
+    vector<string> matrix;
+    {
+        ifstream f{ "Day16.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            matrix.push_back(line);
+        }
+    }
+
+    pair<int, int> startpos, endpos;
+    for (size_t y = 1; y < matrix.size(); y++)
+    {
+        if (matrix[y].find("S") != string::npos)
+        {
+            startpos = { matrix[y].find("S"), y };
+            matrix[startpos.second][startpos.first] ='.';
+        }
+        if (matrix[y].find("E") != string::npos)
+        {
+            endpos = { matrix[y].find("E"), y };
+            matrix[endpos.second][endpos.first] = '.';
+        }
+    }
+
+    struct Node
+    {
+        int px = 0, py = 0, dx = 0, dy = 0;
+        tuple<int, int, int, int> tup()
+        {
+            return { px,py,dx,dy };
+        }
+    };
+
+
+
+    map<tuple<int,int,int,int>, int> costs;
+    costs[{startpos.first, startpos.second, 1, 0}] = 0;
+
+
+    auto compNode = [](pair<Node,int> l, pair<Node, int> r) {return l.second > r.second; };
+
+    // Saves the previous nodes for each node in the optimal path
+    map<tuple<int, int, int, int>, set<tuple<int, int, int, int>>> optimalPath;
+
+    priority_queue<pair<Node, int>, vector<pair<Node, int>>, decltype(compNode)> nodes(compNode);
+
+    nodes.emplace(Node{ startpos.first, startpos.second, 1, 0 }, 0);
+    int endCost = -1;
+    int enddx = 0, enddy = 0;
+
+    while (!nodes.empty())
+    {
+        auto currNode = nodes.top();
+        nodes.pop();
+
+        if (costs.count( currNode.first.tup()) && costs[currNode.first.tup()] < currNode.second)
+            continue; // Already visited
+
+        if (endCost > 0 && currNode.second > endCost)
+            continue;
+
+        Node& n = currNode.first;
+
+        if (n.px == endpos.first && n.py == endpos.second && (currNode.second < endCost || endCost < 0))
+        {
+            endCost = currNode.second;
+            enddx = n.dx;
+            enddy = n.dy;
+            continue;
+        }
+
+        vector<pair<int, Node>> nextCostAndNode = {
+            {currNode.second + 1, { n.px + n.dx, n.py + n.dy, n.dx, n.dy }},
+            {currNode.second + 1000, { n.px, n.py, -n.dy, n.dx }},
+            {currNode.second + 1000, { n.px, n.py, n.dy, -n.dx }},
+        };
+
+        for (auto& [nextcost,nextnode] : nextCostAndNode)
+        {
+            if (matrix[nextnode.py][nextnode.px] == '.')
+            {
+                if ((costs.count(nextnode.tup()) == 0 || costs[nextnode.tup()] > nextcost))
+                {
+                    nodes.push({ nextnode , nextcost });
+                    costs[nextnode.tup()] = nextcost;
+                    optimalPath[nextnode.tup()] = { n.tup() };
+                }
+                else if (costs[nextnode.tup()] == nextcost)
+                {
+                    optimalPath[nextnode.tup()].insert(n.tup());
+                }
+            }
+        }
+    }
+
+    queue<tuple<int, int, int, int>> nodesToCheck;
+    nodesToCheck.push({ endpos.first,endpos.second, enddx, enddy});
+    set<tuple<int, int, int, int>> optimalNodes;
+    set<pair<int, int>> optimalPoses;
+    while (!nodesToCheck.empty())
+    {
+        auto n = nodesToCheck.front();
+        nodesToCheck.pop();
+        if (optimalNodes.count(n))
+            continue;
+        matrix[get<1>(n)][get<0>(n)] = 'O';
+        optimalNodes.insert(n);
+        optimalPoses.insert({ get<0>(n), get<1>(n) });
+        for (auto& nextNode : optimalPath[n])
+        {
+            nodesToCheck.push(nextNode);
+        }
+    }
+
+
+    cout << endCost << " Num positions: " << optimalPoses.size() << endl;
+
+
+    for (auto& i : matrix)
+    {
+        cout << i << endl;
+    }
 }
 
 void day15part2()
@@ -84,6 +216,8 @@ void day15part2()
             pos = { matrix[y].find("@"), y };
             found = true;
         }
+        if (found)
+            break;
     }
 
     if constexpr (display)
