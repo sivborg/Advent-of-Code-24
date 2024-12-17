@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day17();
 void day16();
 void day15part2();
 void day15();
@@ -39,8 +40,99 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day16();
+    day17();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+void day17()
+{
+    int64_t a = 0, b = 0, c = 0;
+    vector<int> instructions;
+    {
+        ifstream f{ "Day17.txt" };
+        std::string line;
+
+
+        std::getline(f, line);
+        stringstream ss{ line };
+        string s;
+        getline(ss, s, ':');
+        getline(ss, s);
+        a = stoll(s);
+
+        std::getline(f, line);
+        ss = stringstream{ line };
+        getline(ss, s, ':');
+        getline(ss, s);
+        b = stoll(s);
+
+        std::getline(f, line);
+        ss = stringstream{ line };
+        getline(ss, s, ':');
+        getline(ss, s);
+        c = stoll(s);
+
+
+        std::getline(f, line);
+        std::getline(f, line);
+        ss = stringstream{ line };
+        getline(ss, s, ':');
+        while (getline(ss, s, ','))
+        {
+            instructions.push_back(stoi(s));
+        }
+    }
+    
+    for (size_t i = 0; i < instructions.size(); i+=2)
+    {
+        int instruction = instructions[i];
+        int64_t operand = instructions[i + 1];
+        if (instruction == 0 || instruction == 2 || instruction == 5 || instruction == 6 || instruction == 7) // Combo operand
+        {
+            if (operand == 4)
+                operand = a;
+            else if (operand == 5)
+                operand = b;
+            else if (operand == 6)
+                operand = c;
+        }
+
+        switch (instruction)
+        {
+        case 0:
+            a = a >> operand;
+            break;
+        case 1:
+            b = b ^ operand;
+            break;
+        case 2:
+            b = operand % 8;
+            break;
+        case 3:
+            if (a != 0)
+            {
+                i = operand;
+                i -= 2;
+            }
+            break;
+        case 4:
+            b = b ^ c;
+            break;
+        case 5:
+            cout << operand % 8 << ",";
+            break;
+        case 6:
+            b = a >> operand;
+            break;
+        case 7:
+            c = a >> operand;
+            break;
+
+        default:
+            break;
+        }
+    }
+    cout << endl;
 }
 
 void day16()
