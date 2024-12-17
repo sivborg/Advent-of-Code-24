@@ -44,6 +44,62 @@ int main()
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
 }
 
+vector<int> day17RunProgram(int64_t a, int64_t b, int64_t c, vector<int>& instructions)
+{
+    vector<int> result;
+    int currOutput = 0;
+    for (size_t i = 0; i < instructions.size(); i += 2)
+    {
+        int instruction = instructions[i];
+        int64_t operand = instructions[i + 1];
+        if (instruction == 0 || instruction == 2 || instruction == 5 || instruction == 6 || instruction == 7) // Combo operand
+        {
+            if (operand == 4)
+                operand = a;
+            else if (operand == 5)
+                operand = b;
+            else if (operand == 6)
+                operand = c;
+        }
+
+        switch (instruction)
+        {
+        case 0:
+            a = a >> operand;
+            break;
+        case 1:
+            b = b ^ operand;
+            break;
+        case 2:
+            b = operand % 8;
+            break;
+        case 3:
+            if (a != 0)
+            {
+                i = operand;
+                i -= 2;
+            }
+            break;
+        case 4:
+            b = b ^ c;
+            break;
+        case 5:
+            result.push_back(operand % 8);
+            break;
+        case 6:
+            b = a >> operand;
+            break;
+        case 7:
+            c = a >> operand;
+            break;
+
+        default:
+            break;
+        }
+    }
+    return result;
+}
+
 void day17()
 {
     int64_t a = 0, b = 0, c = 0;
@@ -82,57 +138,32 @@ void day17()
             instructions.push_back(stoi(s));
         }
     }
-    
-    for (size_t i = 0; i < instructions.size(); i+=2)
+
+    // Oki let's not be dumdums
+    a = 0;
+    while (true)
     {
-        int instruction = instructions[i];
-        int64_t operand = instructions[i + 1];
-        if (instruction == 0 || instruction == 2 || instruction == 5 || instruction == 6 || instruction == 7) // Combo operand
+        auto result = day17RunProgram(a, b, c, instructions);
+        
+        bool matchSoFar = true;
+        for (size_t i = 0; i < result.size(); i++)
         {
-            if (operand == 4)
-                operand = a;
-            else if (operand == 5)
-                operand = b;
-            else if (operand == 6)
-                operand = c;
+            matchSoFar &= result[result.size() - 1 - i] == instructions[instructions.size() - 1 - i];
         }
 
-        switch (instruction)
+        if (matchSoFar)
         {
-        case 0:
-            a = a >> operand;
-            break;
-        case 1:
-            b = b ^ operand;
-            break;
-        case 2:
-            b = operand % 8;
-            break;
-        case 3:
-            if (a != 0)
-            {
-                i = operand;
-                i -= 2;
-            }
-            break;
-        case 4:
-            b = b ^ c;
-            break;
-        case 5:
-            cout << operand % 8 << ",";
-            break;
-        case 6:
-            b = a >> operand;
-            break;
-        case 7:
-            c = a >> operand;
-            break;
+            if (result.size() == instructions.size())
+                break;
 
-        default:
-            break;
+            a = (a << 3);
         }
+        else
+            a++;
+
     }
-    cout << endl;
+    cout << a << endl;
+    day17RunProgram(a, b, c, instructions);
 }
 
 void day16()
