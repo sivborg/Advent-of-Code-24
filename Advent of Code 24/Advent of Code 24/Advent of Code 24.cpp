@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day18();
 void day17();
 void day16();
 void day15part2();
@@ -40,8 +41,99 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day17();
+    day18();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+
+void day18()
+{
+    constexpr int height = 71, width = 71;
+    vector<pair<int,int>> positions;
+    {
+        ifstream f{ "Day18.txt" };
+        std::string line;
+
+        while (std::getline(f, line))
+        {
+            stringstream ss{ line };
+            string s;
+            int x = 0, y = 0;
+            getline(ss, s, ',');
+            x = stoi(s);
+            getline(ss, s, ',');
+            y = stoi(s);
+
+            positions.push_back({ x,y });
+        }
+    }
+
+    vector<string> mymap(height, string(width, '.'));
+
+    for (int i = 0; i < 1024; i++)
+    {
+        auto p = positions[i];
+        mymap[p.second][p.first] = '#';
+    }
+
+
+    map<pair<int, int>, int> costs;
+    costs[{0,0}] = 0;
+
+    priority_queue<pair<int, pair<int,int>>> nodes;
+
+    nodes.emplace(make_pair(0, make_pair(0,0)));
+    int endCost = -1;
+
+    while (!nodes.empty())
+    {
+        auto currNode = nodes.top();
+        nodes.pop();
+
+        if (costs.count(currNode.second) && costs[currNode.second] < currNode.first)
+            continue; // Already visited
+
+        if (endCost > 0 && currNode.first > endCost)
+            continue;
+
+        auto& n = currNode.second;
+
+        if (n.first == width - 1 && n.second == height -1 && (currNode.first < endCost || endCost < 0))
+        {
+            endCost = currNode.first;
+            continue;
+        }
+
+        vector<pair<int, pair<int, int>>> nextCostAndNode;
+        int dx = 1, dy = 0;
+        for (size_t i = 0; i < 4; i++)
+        {
+            if (n.first + dx >= 0 && n.first + dx < width && n.second + dy >= 0 && n.second + dy < height)
+                nextCostAndNode.push_back(make_pair(currNode.first + 1, make_pair( n.first + dx, n.second + dy )));
+            int olddx = dx;
+            dx = -dy;
+            dy = olddx;
+        };
+
+        for (auto& [nextcost, nextnode] : nextCostAndNode)
+        {
+            if (mymap[nextnode.second][nextnode.first] == '.')
+            {
+                if ((costs.count(nextnode) == 0 || costs[nextnode] > nextcost))
+                {
+                    nodes.push({ nextcost, nextnode});
+                    costs[nextnode] = nextcost;
+                }
+            }
+        }
+
+    }
+    cout << endCost << endl;
+
+    for (auto& i : mymap)
+    {
+        cout << i << "\n";
+    }
 }
 
 vector<int> day17RunProgram(int64_t a, int64_t b, int64_t c, vector<int>& instructions)
@@ -212,7 +304,7 @@ void day16()
     auto compNode = [](pair<Node,int> l, pair<Node, int> r) {return l.second > r.second; };
 
     // Saves the previous nodes for each node in the optimal path
-    map<tuple<int, int, int, int>, set<tuple<int, int, int, int>>> optimalPath;
+    map<tuple<int, int, int, int>, set<tuple<int, int, int, int>>> optimalPath; 
 
     priority_queue<pair<Node, int>, vector<pair<Node, int>>, decltype(compNode)> nodes(compNode);
 
