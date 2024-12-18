@@ -45,6 +45,64 @@ int main()
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
 }
 
+int day18SolveMaze(const vector<string>& mymap)
+{
+    map<pair<int, int>, int> costs;
+    costs[{0, 0}] = 0;
+    int height = mymap.size();
+    int width = mymap.back().size();
+
+    priority_queue<pair<int, pair<int, int>>> nodes;
+
+    nodes.emplace(make_pair(0, make_pair(0, 0)));
+    int endCost = -1;
+
+    while (!nodes.empty())
+    {
+        auto currNode = nodes.top();
+        nodes.pop();
+
+        if (costs.count(currNode.second) && costs[currNode.second] < currNode.first)
+            continue; // Already visited
+
+        if (endCost > 0 && currNode.first > endCost)
+            continue;
+
+        auto& n = currNode.second;
+
+        if (n.first == width - 1 && n.second == height - 1 && (currNode.first < endCost || endCost < 0))
+        {
+            endCost = currNode.first;
+            continue;
+        }
+
+        vector<pair<int, pair<int, int>>> nextCostAndNode;
+        int dx = 1, dy = 0;
+        for (size_t i = 0; i < 4; i++)
+        {
+            if (n.first + dx >= 0 && n.first + dx < width && n.second + dy >= 0 && n.second + dy < height)
+                nextCostAndNode.push_back(make_pair(currNode.first + 1, make_pair(n.first + dx, n.second + dy)));
+            int olddx = dx;
+            dx = -dy;
+            dy = olddx;
+        };
+
+        for (auto& [nextcost, nextnode] : nextCostAndNode)
+        {
+            if (mymap[nextnode.second][nextnode.first] == '.')
+            {
+                if ((costs.count(nextnode) == 0 || costs[nextnode] > nextcost))
+                {
+                    nodes.push({ nextcost, nextnode });
+                    costs[nextnode] = nextcost;
+                }
+            }
+        }
+
+    }
+    return endCost;
+
+}
 
 void day18()
 {
@@ -68,72 +126,45 @@ void day18()
         }
     }
 
-    vector<string> mymap(height, string(width, '.'));
+    int lowerBound = 1024;
+    int upperBound = positions.size();
 
-    for (int i = 0; i < 1024; i++)
+    bool found = false;
+    int toCheck = 0;
+
+
+    while (!found)
     {
-        auto p = positions[i];
-        mymap[p.second][p.first] = '#';
-    }
+        vector<string> mymap(height, string(width, '.'));
+        toCheck = (lowerBound + upperBound) / 2;
+        //cout << toCheck << endl;
 
 
-    map<pair<int, int>, int> costs;
-    costs[{0,0}] = 0;
-
-    priority_queue<pair<int, pair<int,int>>> nodes;
-
-    nodes.emplace(make_pair(0, make_pair(0,0)));
-    int endCost = -1;
-
-    while (!nodes.empty())
-    {
-        auto currNode = nodes.top();
-        nodes.pop();
-
-        if (costs.count(currNode.second) && costs[currNode.second] < currNode.first)
-            continue; // Already visited
-
-        if (endCost > 0 && currNode.first > endCost)
-            continue;
-
-        auto& n = currNode.second;
-
-        if (n.first == width - 1 && n.second == height -1 && (currNode.first < endCost || endCost < 0))
+        for (int i = 0; i < toCheck; i++)
         {
-            endCost = currNode.first;
-            continue;
+            auto p = positions[i];
+            mymap[p.second][p.first] = '#';
         }
 
-        vector<pair<int, pair<int, int>>> nextCostAndNode;
-        int dx = 1, dy = 0;
-        for (size_t i = 0; i < 4; i++)
+        if (day18SolveMaze(mymap) > -1)
         {
-            if (n.first + dx >= 0 && n.first + dx < width && n.second + dy >= 0 && n.second + dy < height)
-                nextCostAndNode.push_back(make_pair(currNode.first + 1, make_pair( n.first + dx, n.second + dy )));
-            int olddx = dx;
-            dx = -dy;
-            dy = olddx;
-        };
-
-        for (auto& [nextcost, nextnode] : nextCostAndNode)
-        {
-            if (mymap[nextnode.second][nextnode.first] == '.')
+            auto p = positions[toCheck];
+            mymap[p.second][p.first] = '#';
+            if (day18SolveMaze(mymap) == -1)
             {
-                if ((costs.count(nextnode) == 0 || costs[nextnode] > nextcost))
-                {
-                    nodes.push({ nextcost, nextnode});
-                    costs[nextnode] = nextcost;
-                }
+                found = true;
+            }
+            else
+            {
+                lowerBound = toCheck;
             }
         }
 
+        else
+            upperBound = toCheck;
     }
-    cout << endCost << endl;
 
-    for (auto& i : mymap)
-    {
-        cout << i << "\n";
-    }
+    cout <<"Found: " << positions[toCheck].first << "," << positions[toCheck].second << endl;
 }
 
 vector<int> day17RunProgram(int64_t a, int64_t b, int64_t c, vector<int>& instructions)
