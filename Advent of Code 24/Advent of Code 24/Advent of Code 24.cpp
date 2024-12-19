@@ -46,11 +46,13 @@ int main()
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
 }
 
-bool day19CheckPattern(std::string& pattern, const map<char, vector<string>>& towels, map<string, bool>& memoise)
+uint64_t day19CheckPattern(std::string& pattern, const map<char, vector<string>>& towels, map<string, int64_t>& memoise)
 {
     char start = pattern[0];
     if (!towels.count(start))
-        return false;
+        return 0;
+
+    int64_t nCombos = 0;
 
     for (auto& towel : towels.at(start))
     {
@@ -70,21 +72,21 @@ bool day19CheckPattern(std::string& pattern, const map<char, vector<string>>& to
 
         string s = pattern.substr(towel.size());
         if (s.empty())
-            return true;
+            nCombos++;
         if (memoise.count(s))
         {
             if (memoise.at(s))
-                return true;
+                nCombos += memoise.at(s);
         }
         else
         {
-            bool res = day19CheckPattern(s, towels, memoise);
+            int64_t res = day19CheckPattern(s, towels, memoise);
             memoise[s] = res;
             if (res)
-                return true;
+                nCombos += res;
         }
     }
-    return false;
+    return nCombos;
 }
 
 void day19()
@@ -115,13 +117,12 @@ void day19()
         }
     }
 
-    map<string, bool> memoise;
+    map<string, int64_t> memoise;
 
-    int doable = 0;
+    int64_t doable = 0;
     for (auto& patt : desired_patterns)
     {
-        if (day19CheckPattern(patt, towels, memoise))
-            doable++;
+        doable += day19CheckPattern(patt, towels, memoise);
     }
 
     cout << doable << endl;
