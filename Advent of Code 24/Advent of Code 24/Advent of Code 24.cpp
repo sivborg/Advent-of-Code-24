@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day19();
 void day18();
 void day17();
 void day16();
@@ -41,8 +42,91 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day18();
+    day19();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+bool day19CheckPattern(std::string& pattern, const map<char, vector<string>>& towels, map<string, bool>& memoise)
+{
+    char start = pattern[0];
+    if (!towels.count(start))
+        return false;
+
+    for (auto& towel : towels.at(start))
+    {
+        if (towel.size() > pattern.size())
+            continue;
+        bool match = true;
+        for (size_t i = 0; i < towel.size(); i++)
+        {
+            if (towel[i] != pattern[i])
+            {
+                match = false;
+                break;
+            }
+        }
+        if (!match)
+            continue;
+
+        string s = pattern.substr(towel.size());
+        if (s.empty())
+            return true;
+        if (memoise.count(s))
+        {
+            if (memoise.at(s))
+                return true;
+        }
+        else
+        {
+            bool res = day19CheckPattern(s, towels, memoise);
+            memoise[s] = res;
+            if (res)
+                return true;
+        }
+    }
+    return false;
+}
+
+void day19()
+{
+    map<char, vector<string>> towels;
+    vector<string> desired_patterns;
+    {
+        ifstream f{ "Day19.txt" };
+        std::string line;
+
+        std::getline(f, line);
+
+
+        stringstream ss{ line };
+        string s;
+        while (std::getline(ss, s, ','))
+        {
+            if(std::isspace(s[0]))
+                s = s.substr(1); //Skip space
+            towels[s[0]].push_back(s);
+        }
+
+        getline(f, s);
+
+        while (std::getline(f, s))
+        {
+            desired_patterns.push_back(s);
+        }
+    }
+
+    map<string, bool> memoise;
+
+    int doable = 0;
+    for (auto& patt : desired_patterns)
+    {
+        if (day19CheckPattern(patt, towels, memoise))
+            doable++;
+    }
+
+    cout << doable << endl;
+
+    return;
 }
 
 int day18SolveMaze(const vector<string>& mymap)
