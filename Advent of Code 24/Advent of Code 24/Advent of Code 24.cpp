@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day20();
 void day19();
 void day18();
 void day17();
@@ -42,8 +43,130 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day19();
+    day20();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+
+
+map<pair<int, int>, int> day20SolveMaze(const vector<string>& mymap, pair<int,int> startpos)
+{
+    map<pair<int, int>, int> costs;
+    costs[{startpos.first, startpos.second}] = 0;
+    int height = mymap.size();
+    int width = mymap.back().size();
+
+    priority_queue<pair<int, pair<int, int>>> nodes;
+
+    nodes.emplace(make_pair(0, make_pair(startpos.first,startpos.second)));
+    int endCost = -1;
+    int numPossible = 0;
+
+    while (!nodes.empty())
+    {
+        auto currNode = nodes.top();
+        nodes.pop();
+
+        if (costs.count(currNode.second) && costs[currNode.second] < currNode.first)
+            continue; // Already visited
+
+        auto& n = currNode.second;
+
+        vector<pair<int, pair<int, int>>> nextCostAndNode;
+        int dx = 1, dy = 0;
+        for (size_t i = 0; i < 4; i++)
+        {
+            if (n.first + dx >= 0 && n.first + dx < width && n.second + dy >= 0 && n.second + dy < height)
+                nextCostAndNode.push_back(make_pair(currNode.first + 1, make_pair(n.first + dx, n.second + dy)));
+            int olddx = dx;
+            dx = -dy;
+            dy = olddx;
+        };
+
+        for (auto& [nextcost, nextnode] : nextCostAndNode)
+        {
+            if (mymap[nextnode.second][nextnode.first] == '.')
+            {
+                if ((costs.count(nextnode) == 0 || costs[nextnode] > nextcost))
+                {
+                    nodes.push({ nextcost, nextnode });
+                    costs[nextnode] = nextcost;
+                }
+            }
+        }
+
+    }
+
+    return costs;
+
+}
+
+void day20()
+{
+    vector<string> matrix;
+    {
+        ifstream f{ "Day20.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            matrix.push_back(line);
+        }
+    }
+
+    int height = matrix.size(), width = matrix.back().size();
+
+    pair<int, int> startpos, endpos;
+    for (size_t y = 1; y < matrix.size(); y++)
+    {
+        if (matrix[y].find("S") != string::npos)
+        {
+            startpos = { matrix[y].find("S"), y };
+            matrix[startpos.second][startpos.first] = '.';
+        }
+        if (matrix[y].find("E") != string::npos)
+        {
+            endpos = { matrix[y].find("E"), y };
+            matrix[endpos.second][endpos.first] = '.';
+        }
+    }
+
+    auto costEnd = day20SolveMaze(matrix, endpos);
+
+    auto costStart = day20SolveMaze(matrix, startpos);
+
+    auto costOptimal = costStart[endpos];
+
+    int numShortcuts = 0;
+    int toSave = 99;
+
+    for (auto& i : costEnd)
+    {
+        int dx = 2, dy = 0;
+        for (size_t j = 0; j < 4; j++)
+        {
+            if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + 2 < costOptimal - toSave)
+                numShortcuts++;
+            int t = dx;
+            dx = dy;
+            dy = -t;
+        }
+    }
+
+    for (auto& i : costEnd)
+    {
+        int dx = 1, dy = 1;
+        for (size_t j = 0; j < 4; j++)
+        {
+            if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + 2 < costOptimal - toSave)
+                numShortcuts++;
+            int t = dx;
+            dx = dy;
+            dy = -t;
+        }
+    }
+
+    cout << numShortcuts << endl;
 }
 
 uint64_t day19CheckPattern(std::string& pattern, const map<char, vector<string>>& towels, map<string, int64_t>& memoise)
