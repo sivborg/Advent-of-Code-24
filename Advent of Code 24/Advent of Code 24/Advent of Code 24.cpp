@@ -137,32 +137,47 @@ void day20()
 
     auto costOptimal = costStart[endpos];
 
-    int numShortcuts = 0;
+    uint64_t numShortcuts = 0;
     int toSave = 99;
 
     for (auto& i : costEnd)
     {
-        int dx = 2, dy = 0;
-        for (size_t j = 0; j < 4; j++)
+        int cx = -20, cy = 0;
+        for (size_t k = 0; k < 21; k++)
         {
-            if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + 2 < costOptimal - toSave)
-                numShortcuts++;
-            int t = dx;
-            dx = dy;
-            dy = -t;
+            int currx = cx, curry = cy;
+            for (size_t j = 0; j < 21; j++)
+            {
+                int dx = currx, dy = curry;
+                //cout << dx << ", " << dy << endl;
+                if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + abs(dx) + abs(dy) < costOptimal - toSave)
+                {
+                    numShortcuts++;
+                }
+                currx++;
+                curry++;
+            }
+            cx++;
+            cy--;
         }
-    }
 
-    for (auto& i : costEnd)
-    {
-        int dx = 1, dy = 1;
-        for (size_t j = 0; j < 4; j++)
+        cx = -19, cy = 0;
+        for (size_t k = 0; k < 20; k++)
         {
-            if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + 2 < costOptimal - toSave)
-                numShortcuts++;
-            int t = dx;
-            dx = dy;
-            dy = -t;
+            int currx = cx, curry = cy;
+            for (size_t j = 0; j < 20; j++)
+            {
+                int dx = currx, dy = curry;
+                //cout << dx << ", " << dy << endl;
+                if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + abs(dx) + abs(dy) < costOptimal - toSave)
+                {
+                    numShortcuts++;
+                }   
+                currx++;
+                curry++;
+            }
+            cx++;
+            cy--;
         }
     }
 
