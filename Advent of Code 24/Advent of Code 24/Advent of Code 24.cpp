@@ -68,17 +68,46 @@ void day22()
             secrets.push_back(stoi(line));
         }
     }
-    uint64_t acc = 0;
+    map<tuple<int, int, int, int>, uint64_t> sequenceBananas;
     for (auto& i : secrets)
     {
+        set<tuple<int, int, int, int>> usedSequences;
+        tuple<int, int, int, int> changes;
+        int j = 0;
         uint64_t num = i;
-        for (size_t j = 0; j < 2000; j++)
+        int prevnum = num % 10;
+        for (; j < 3; j++)
         {
             num = day22NextNum(num);
+            std::get<0>(changes) = std::get<1>(changes);
+            std::get<1>(changes) = std::get<2>(changes);
+            std::get<2>(changes) = std::get<3>(changes);
+            std::get<3>(changes) = (num % 10) - prevnum;
+            prevnum = num % 10;
         }
-        acc += num;
+        for (; j < 2000; j++)
+        {
+            num = day22NextNum(num);
+            std::get<0>(changes) = std::get<1>(changes);
+            std::get<1>(changes) = std::get<2>(changes);
+            std::get<2>(changes) = std::get<3>(changes);
+            std::get<3>(changes) = (num % 10) - prevnum;
+            prevnum = num % 10;
+            if (usedSequences.count(changes))
+                continue;
+            usedSequences.insert(changes);
+            sequenceBananas[changes] += prevnum;
+        }
     }
-    cout << acc << endl;
+    uint64_t max = 0;
+
+    for (auto& i : sequenceBananas)
+    {
+        if (i.second > max)
+            max = i.second;
+    }
+    cout << max << endl;
+    
 }
 
 uint64_t day21getCode(char from, char to, int depth, map<char, pair<int, int>>& keyboard)
