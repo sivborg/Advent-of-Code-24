@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day21();
 void day20();
 void day19();
 void day18();
@@ -43,11 +44,182 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day20();
+    day21();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
 }
 
+uint64_t day21getCode(char from, char to, int depth, map<char, pair<int, int>>& keyboard)
+{
+    static map<tuple<char, char, int>, uint64_t> lengths;
+    if (depth == 0)
+        return 2;
+    if (from == to)
+        return 1;
+    if (lengths.count({ from,to,depth }))
+        return lengths[{from, to, depth}];
 
+    static map<char, pair<int, int>> keyboard2 =
+    {
+        {'^', {1,0}},
+        {'A', {2,0}},
+        {'<', {0,1}},
+        {'v', {1,1}},
+        {'>', {2,1}}
+    };
+
+    char start = from;
+    char next = to;
+    string horiz = "";
+    char move = keyboard[start].first < keyboard[next].first ? '>' : '<';
+    for (size_t i = 0; i < abs(keyboard[next].first - keyboard[start].first); i++)
+    {
+        horiz += move;
+    }
+
+    string vert = "";
+    move = keyboard[start].second < keyboard[next].second ? 'v' : '^';
+    for (size_t i = 0; i < abs(keyboard[next].second - keyboard[start].second); i++)
+    {
+        vert += move;
+    }
+    uint64_t len = 0;
+    string checklen = "";
+    bool horizontalHitsNoButton = keyboard[next].first == 0 && // Only if the next key is in the first column
+        ((keyboard[start].second == 3) || (keyboard[start].second == 0 && keyboard.count('v')));
+
+    bool verticalHitsNoButton = (keyboard[next].second == 3 && keyboard[start].first == 0) ||
+        (keyboard.count('v') && keyboard[next].second == 0 && keyboard[start].first == 0); // For 2nd keyboard
+    if (!horizontalHitsNoButton) // Have to skip when you cant do horizontal first
+    {
+        checklen = horiz + vert + "A";
+        if (depth > 1)
+        {
+            checklen = "A" + checklen;
+            for (size_t i = 0; i < checklen.size() - 1; i++)
+            {
+                len += day21getCode(checklen[i], checklen[i + 1], depth - 1, keyboard2);
+            }
+        }
+        else len = checklen.size();
+    }
+    else if (!verticalHitsNoButton)
+    {
+        if (len == 0 || (horiz.size() != 0 && vert.size() != 0)) // skip if either no vert or no horizontal movement
+        {
+            checklen = vert + horiz + "A";
+            uint64_t len2 = 0;
+            if (depth > 1)
+            {
+                checklen = "A" + checklen;
+
+                for (size_t i = 0; i < checklen.size() - 1; i++)
+                {
+                    len2 += day21getCode(checklen[i], checklen[i + 1], depth - 1, keyboard2);
+                }
+            }
+            else len2 = checklen.size();
+            if (len == 0 || len2 < len)
+                len = len2;
+        }
+    }
+
+    lengths[{from, to, depth}] = len;
+    return len;
+}
+
+string day21reverseCode(string& target, map<char, pair<int, int>>& keyboard)
+{
+    auto [currx, curry] = keyboard['A'];
+    string res = "";
+    for (auto& c : target)
+    {
+        switch (c)
+        {
+        case ('v'):
+            curry += 1;
+            break;
+        case ('^'):
+            curry -= 1;
+            break;
+        case ('<'):
+            currx -= 1;
+            break;
+        case ('>'):
+            currx += 1;
+            break;
+        case ('A'):
+            for (auto& i : keyboard)
+            {
+                if (i.second == make_pair(currx, curry))
+                {
+                    res += i.first;
+                    break;
+                }
+            }
+            break;
+        default:
+            break;
+        }
+        bool found = false;
+        for (auto& i : keyboard)
+        {
+            if (i.second == make_pair(currx, curry))
+            {
+                found = true;
+            }
+        }
+        if (!found)
+            throw 0;
+    }
+    return res;
+}
+
+void day21()
+{
+    vector<string> targets;
+    {
+        ifstream f{ "Day21.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            targets.push_back(line);
+        }
+    }
+    map<char, pair<int, int>> keyboard1 =
+    {
+        {'7', {0,0}},
+        {'8', {1,0}},
+        {'9', {2,0}},
+        {'4', {0,1}},
+        {'5', {1,1}},
+        {'6', {2,1}},
+        {'1', {0,2}},
+        {'2', {1,2}},
+        {'3', {2,2}},
+        {'0', {1,3}},
+        {'A', {2,3}},
+    };
+
+    int acc = 0;
+    for (auto& wanted_output : targets)
+    {
+        uint64_t len = 0;
+        wanted_output = "A" + wanted_output;
+        for (size_t i = 0; i < wanted_output.size() - 1; i++)
+        {
+            len += day21getCode(wanted_output[i], wanted_output[i + 1], 3, keyboard1);
+        }
+
+        string intstring;
+        std::copy_if(wanted_output.begin(), wanted_output.end(), std::back_inserter(intstring), std::isdigit);
+        int num = stoi(intstring);
+
+        acc += len * num;
+    }
+
+    cout << acc << endl;    
+}
 
 map<pair<int, int>, int> day20SolveMaze(const vector<string>& mymap, pair<int,int> startpos)
 {
@@ -149,7 +321,6 @@ void day20()
             for (size_t j = 0; j < 21; j++)
             {
                 int dx = currx, dy = curry;
-                //cout << dx << ", " << dy << endl;
                 if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + abs(dx) + abs(dy) < costOptimal - toSave)
                 {
                     numShortcuts++;
@@ -168,7 +339,6 @@ void day20()
             for (size_t j = 0; j < 20; j++)
             {
                 int dx = currx, dy = curry;
-                //cout << dx << ", " << dy << endl;
                 if (costStart.count({ i.first.first + dx, i.first.second + dy }) && i.second + costStart[{ i.first.first + dx, i.first.second + dy }] + abs(dx) + abs(dy) < costOptimal - toSave)
                 {
                     numShortcuts++;
