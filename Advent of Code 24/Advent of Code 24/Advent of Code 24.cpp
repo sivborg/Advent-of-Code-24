@@ -17,6 +17,7 @@
 
 using namespace std;
 
+void day22();
 void day21();
 void day20();
 void day19();
@@ -44,8 +45,40 @@ void day4part2();
 int main()
 {
     auto then = chrono::steady_clock::now();
-    day21();
+    day22();
     cout << "Time taken (s): " << chrono::duration<double>(chrono::steady_clock::now() - then).count() << endl;
+}
+
+uint64_t day22NextNum(uint64_t num)
+{
+    num = (num ^ (num << 6)) % 16777216;
+    num = ((num >> 5) ^ num) % 16777216;
+    return ((num << 11) ^ num) % 16777216;
+}
+
+void day22()
+{
+    vector<int> secrets;
+    {
+        ifstream f{ "Day22.txt" };
+
+        string line;
+
+        while (std::getline(f, line)) {
+            secrets.push_back(stoi(line));
+        }
+    }
+    uint64_t acc = 0;
+    for (auto& i : secrets)
+    {
+        uint64_t num = i;
+        for (size_t j = 0; j < 2000; j++)
+        {
+            num = day22NextNum(num);
+        }
+        acc += num;
+    }
+    cout << acc << endl;
 }
 
 uint64_t day21getCode(char from, char to, int depth, map<char, pair<int, int>>& keyboard)

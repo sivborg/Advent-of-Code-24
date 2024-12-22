@@ -38,5 +38,6 @@
     <Text Include="Day19.txt" />
     <Text Include="day20.txt" />
     <Text Include="day21.txt" />
+    <Text Include="Day22.txt" />
   </ItemGroup>
 </Project>
