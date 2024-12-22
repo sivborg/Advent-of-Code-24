@@ -51,8 +51,6 @@ int main()
 uint64_t day21getCode(char from, char to, int depth, map<char, pair<int, int>>& keyboard)
 {
     static map<tuple<char, char, int>, uint64_t> lengths;
-    if (depth == 0)
-        return 2;
     if (from == to)
         return 1;
     if (lengths.count({ from,to,depth }))
@@ -83,45 +81,61 @@ uint64_t day21getCode(char from, char to, int depth, map<char, pair<int, int>>& 
         vert += move;
     }
     uint64_t len = 0;
-    string checklen = "";
-    bool horizontalHitsNoButton = keyboard[next].first == 0 && // Only if the next key is in the first column
-        ((keyboard[start].second == 3) || (keyboard[start].second == 0 && keyboard.count('v')));
+    string checkPerm =  horiz + vert;
+    std::sort(checkPerm.begin(), checkPerm.end());
 
-    bool verticalHitsNoButton = (keyboard[next].second == 3 && keyboard[start].first == 0) ||
-        (keyboard.count('v') && keyboard[next].second == 0 && keyboard[start].first == 0); // For 2nd keyboard
-    if (!horizontalHitsNoButton) // Have to skip when you cant do horizontal first
+    set<pair<int, int>> allowedCoords;
+    for (auto& i : keyboard)
     {
-        checklen = horiz + vert + "A";
+        allowedCoords.insert(i.second);
+    }
+
+    auto insideBounds = [&allowedCoords](pair<int, int> begin, const string& path)
+        {
+            for (auto& c : path)
+            {
+                switch (c)
+                {
+                case ('v'):
+                    begin.second += 1;
+                    break;
+                case ('^'):
+                    begin.second -= 1;
+                    break;
+                case ('<'):
+                    begin.first -= 1;
+                    break;
+                case ('>'):
+                    begin.first += 1;
+                    break;
+                default:
+                    break;
+                }
+                if (allowedCoords.count(begin) == 0)
+                    return false;
+            }
+            return true;
+        };
+
+    do 
+    {
+        if (!insideBounds(keyboard[start], checkPerm))
+            continue;
+
+        string toCheck = checkPerm + "A";
+        uint64_t permLen = 0;
         if (depth > 1)
         {
-            checklen = "A" + checklen;
-            for (size_t i = 0; i < checklen.size() - 1; i++)
+            toCheck = "A" + toCheck;
+            for (size_t i = 0; i < toCheck.size() - 1; i++)
             {
-                len += day21getCode(checklen[i], checklen[i + 1], depth - 1, keyboard2);
+                permLen += day21getCode(toCheck[i], toCheck[i + 1], depth - 1, keyboard2);
             }
         }
-        else len = checklen.size();
-    }
-    else if (!verticalHitsNoButton)
-    {
-        if (len == 0 || (horiz.size() != 0 && vert.size() != 0)) // skip if either no vert or no horizontal movement
-        {
-            checklen = vert + horiz + "A";
-            uint64_t len2 = 0;
-            if (depth > 1)
-            {
-                checklen = "A" + checklen;
-
-                for (size_t i = 0; i < checklen.size() - 1; i++)
-                {
-                    len2 += day21getCode(checklen[i], checklen[i + 1], depth - 1, keyboard2);
-                }
-            }
-            else len2 = checklen.size();
-            if (len == 0 || len2 < len)
-                len = len2;
-        }
-    }
+        else permLen = toCheck.size();
+        if (len == 0 || permLen < len)
+            len = permLen;
+    } while (next_permutation(checkPerm.begin(), checkPerm.end()));
 
     lengths[{from, to, depth}] = len;
     return len;
@@ -201,14 +215,14 @@ void day21()
         {'A', {2,3}},
     };
 
-    int acc = 0;
+    uint64_t acc = 0;
     for (auto& wanted_output : targets)
     {
         uint64_t len = 0;
         wanted_output = "A" + wanted_output;
         for (size_t i = 0; i < wanted_output.size() - 1; i++)
         {
-            len += day21getCode(wanted_output[i], wanted_output[i + 1], 3, keyboard1);
+            len += day21getCode(wanted_output[i], wanted_output[i + 1], 26, keyboard1);
         }
 
         string intstring;
